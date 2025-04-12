@@ -1,0 +1,22 @@
+{
+  "name": "spot-the-difference-game",
+  "version": "1.0.0",
+  "description": "A JSON-configurable Spot the Difference game",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve",
+    "deploy": "vercel"
+  },
+  "keywords": [
+    "game",
+    "spot-the-difference",
+    "html",
+    "css",
+    "javascript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+} 

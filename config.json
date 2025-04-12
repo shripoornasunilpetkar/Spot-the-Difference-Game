@@ -1,0 +1,20 @@
+{
+  "gameTitle": "Spot the Difference",
+  "images": {
+    "image1": "images/image1.jpeg",
+    "image2": "images/image2.jpeg"
+  },
+  "differences": [
+    { 
+      "validCoordinates": [
+        { "x": 296, "y": 368 },
+        { "x": 408, "y": 353 },
+        { "x": 364, "y": 423 },
+        { "x": 202, "y": 361 }
+      ],
+      "width": 60,
+      "height": 60
+    }
+  ],
+  "tolerance": 30
+} 
