@@ -104,14 +104,20 @@ async function initGame() {
     await Promise.all([
         new Promise(resolve => {
             image1.onload = () => {
-                console.log('Image 1 loaded:', image1.naturalWidth, image1.naturalHeight);
+                console.log('Image 1 dimensions:', {
+                    natural: { width: image1.naturalWidth, height: image1.naturalHeight },
+                    display: { width: image1.offsetWidth, height: image1.offsetHeight }
+                });
                 resolve();
             };
             image1.src = gameConfig.images.image1;
         }),
         new Promise(resolve => {
             image2.onload = () => {
-                console.log('Image 2 loaded:', image2.naturalWidth, image2.naturalHeight);
+                console.log('Image 2 dimensions:', {
+                    natural: { width: image2.naturalWidth, height: image2.naturalHeight },
+                    display: { width: image2.offsetWidth, height: image2.offsetHeight }
+                });
                 resolve();
             };
             image2.src = gameConfig.images.image2;
@@ -140,19 +146,26 @@ function handleImageClick(e) {
     const displayWidth = rect.width;
     const displayHeight = rect.height;
     
-    // Calculate the scaling factors based on the actual image dimensions
+    // Get click position relative to the image
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    
+    // Calculate the ratio between natural and display dimensions
     const scaleX = image1.naturalWidth / displayWidth;
     const scaleY = image1.naturalHeight / displayHeight;
     
-    // Get click coordinates in the original image space
-    const x = Math.round((e.clientX - rect.left) * scaleX);
-    const y = Math.round((e.clientY - rect.top) * scaleY);
+    // Convert click coordinates to the original image space
+    const x = Math.round(clickX * scaleX);
+    const y = Math.round(clickY * scaleY);
     
-    // Log coordinates and scaling for debugging
-    console.log('Click position:', { clientX: e.clientX - rect.left, clientY: e.clientY - rect.top });
-    console.log('Image dimensions:', { natural: { width: image1.naturalWidth, height: image1.naturalHeight }, display: { width: displayWidth, height: displayHeight }});
-    console.log('Scaled coordinates:', { x, y });
-    console.log('Scale factors:', { scaleX, scaleY });
+    // Log all dimensions and calculations for debugging
+    console.log('Click event:', {
+        client: { x: e.clientX, y: e.clientY },
+        rect: { left: rect.left, top: rect.top },
+        click: { x: clickX, y: clickY },
+        scale: { x: scaleX, y: scaleY },
+        calculated: { x, y }
+    });
     
     checkDifference(x, y);
 }
@@ -169,15 +182,25 @@ function checkDifference(x, y) {
                 score++;
                 updateScore();
                 
-                // Calculate the scaled position for the highlight based on current display size
+                // Get current image dimensions
                 const rect = image1.getBoundingClientRect();
+                
+                // Calculate the ratio between natural and display dimensions
                 const scaleX = rect.width / image1.naturalWidth;
                 const scaleY = rect.height / image1.naturalHeight;
                 
+                // Scale the coordinates and dimensions for display
                 const scaledX = coord.x * scaleX;
                 const scaledY = coord.y * scaleY;
                 const scaledWidth = diff.width * scaleX;
                 const scaledHeight = diff.height * scaleY;
+                
+                // Log the scaling calculations
+                console.log('Highlight scaling:', {
+                    original: { x: coord.x, y: coord.y, width: diff.width, height: diff.height },
+                    scale: { x: scaleX, y: scaleY },
+                    scaled: { x: scaledX, y: scaledY, width: scaledWidth, height: scaledHeight }
+                });
                 
                 highlightDifference({
                     x: scaledX,

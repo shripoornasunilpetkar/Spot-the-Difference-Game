@@ -192,27 +192,29 @@ h1 {
     margin-bottom: 0.5rem;
     flex: 1;
     overflow: hidden;
-    max-height: 80vh;
     padding: 1rem;
+    height: calc(100vh - 200px);
 }
 
 .image-wrapper {
     position: relative !important;
-    max-width: 50%;
-    width: 100%;
-    height: 100%;
+    max-width: 45%;
+    width: 600px;
+    height: 600px;
     border-radius: 10px;
     overflow: visible !important;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: var(--dark-bg);
 }
 
 img {
-    width: 100%;
-    height: 100%;
-    max-height: 70vh;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
     object-fit: contain;
     border-radius: 10px;
     cursor: pointer;
@@ -429,17 +431,20 @@ img {
     .images-container {
         flex-direction: column;
         align-items: center;
-        max-height: none;
+        height: auto;
         padding: 0.5rem;
     }
     
     .image-wrapper {
         max-width: 100%;
-        height: 40vh;
+        width: 100%;
+        height: 45vh;
+        margin-bottom: 1rem;
     }
     
     img {
-        max-height: 40vh;
+        max-height: 100%;
+        width: auto;
     }
     
     .stats {
