@@ -267,12 +267,12 @@ img {
 
 .highlight {
     position: absolute;
+    background-color: rgba(0, 184, 148, 0.3);
     border: 3px solid var(--highlight-color);
     border-radius: 5px;
     pointer-events: none;
-    box-shadow: 0 0 10px rgba(0, 184, 148, 0.7);
     z-index: 10;
-    background-color: rgba(0, 184, 148, 0.2);
+    box-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
 }
 
 /* Game Controls */
