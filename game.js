@@ -119,13 +119,21 @@ function handleImageClick(e) {
     }, 62.5);
     
     const rect = image1.getBoundingClientRect();
-    const x = Math.round(e.clientX - rect.left);
-    const y = Math.round(e.clientY - rect.top);
+    const imageWidth = image1.naturalWidth;
+    const imageHeight = image1.naturalHeight;
+    
+    // Calculate relative coordinates
+    const x = Math.round((e.clientX - rect.left) * (imageWidth / rect.width));
+    const y = Math.round((e.clientY - rect.top) * (imageHeight / rect.height));
+    
     checkDifference(x, y);
 }
 
 // Check if the clicked position is a difference
 function checkDifference(x, y) {
+    const imageWidth = image1.naturalWidth;
+    const imageHeight = image1.naturalHeight;
+    
     for (const diff of gameConfig.differences) {
         // Check if the click is within the tolerance range of any valid coordinate
         for (const coord of diff.validCoordinates) {
@@ -135,7 +143,19 @@ function checkDifference(x, y) {
                 foundDifferences.push(diff);
                 score++;
                 updateScore();
-                highlightDifference(diff, coord);
+                
+                // Calculate display coordinates based on current image size
+                const displayX = (coord.x / imageWidth) * image1.offsetWidth;
+                const displayY = (coord.y / imageHeight) * image1.offsetHeight;
+                const displayWidth = (diff.width / imageWidth) * image1.offsetWidth;
+                const displayHeight = (diff.height / imageHeight) * image1.offsetHeight;
+                
+                highlightDifference(diff, {
+                    x: displayX,
+                    y: displayY,
+                    width: displayWidth,
+                    height: displayHeight
+                });
                 
                 checkGameCompletion();
                 return;
@@ -154,15 +174,15 @@ function highlightDifference(diff, coord) {
     highlight.className = 'highlight';
     highlight.style.left = coord.x + 'px';
     highlight.style.top = coord.y + 'px';
-    highlight.style.width = diff.width + 'px';
-    highlight.style.height = diff.height + 'px';
+    highlight.style.width = coord.width + 'px';
+    highlight.style.height = coord.height + 'px';
     
     // Add the highlight to the image wrapper
     const imageWrapper = image1.parentElement;
     imageWrapper.appendChild(highlight);
     
     // Log for debugging
-    console.log('Highlight added at:', coord.x, coord.y, diff.width, diff.height);
+    console.log('Highlight added at:', coord.x, coord.y, coord.width, coord.height);
 }
 
 // Update the score display
