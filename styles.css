@@ -195,11 +195,11 @@ h1 {
 }
 
 .image-wrapper {
-    position: relative;
+    position: relative !important;
     max-width: 50%;
     width: 100%;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: visible !important;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
@@ -267,13 +267,18 @@ img {
 
 .highlight {
     position: absolute;
-    background-color: rgba(0, 184, 148, 0.3);
-    border: 3px solid var(--highlight-color);
+    background-color: rgba(0, 184, 148, 0.3) !important;
+    border: 3px solid #00b894 !important;
     border-radius: 5px;
     pointer-events: none;
-    z-index: 10;
+    z-index: 1000;
     box-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
     transform-origin: top left;
+    min-width: 20px;
+    min-height: 20px;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 /* Game Controls */

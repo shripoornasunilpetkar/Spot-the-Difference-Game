@@ -187,10 +187,23 @@ function highlightDifference(scaledCoord) {
     
     // Add the highlight to the image wrapper
     const imageWrapper = image1.parentElement;
+    
+    // Force a reflow to ensure the highlight is rendered
+    highlight.offsetHeight;
+    
     imageWrapper.appendChild(highlight);
     
-    // Log for debugging
-    console.log('Highlight added at:', scaledCoord.x, scaledCoord.y, scaledCoord.width, scaledCoord.height);
+    // Double check that the highlight was added and is visible
+    console.log('Highlight element:', highlight);
+    console.log('Highlight styles:', {
+        left: highlight.style.left,
+        top: highlight.style.top,
+        width: highlight.style.width,
+        height: highlight.style.height,
+        display: getComputedStyle(highlight).display,
+        visibility: getComputedStyle(highlight).visibility,
+        opacity: getComputedStyle(highlight).opacity
+    });
 }
 
 // Update the score display
