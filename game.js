@@ -119,11 +119,20 @@ function handleImageClick(e) {
     }, 62.5);
     
     const rect = image1.getBoundingClientRect();
-    const x = Math.round(e.clientX - rect.left);
-    const y = Math.round(e.clientY - rect.top);
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
+    
+    // Calculate the scaling factors
+    const scaleX = displayWidth / image1.naturalWidth;
+    const scaleY = displayHeight / image1.naturalHeight;
+    
+    // Get click coordinates relative to the displayed image
+    const x = Math.round((e.clientX - rect.left) / scaleX);
+    const y = Math.round((e.clientY - rect.top) / scaleY);
     
     // Log coordinates for debugging
     console.log('Clicked at:', x, y);
+    console.log('Scale factors:', scaleX, scaleY);
     checkDifference(x, y);
 }
 
@@ -139,7 +148,23 @@ function checkDifference(x, y) {
                 score++;
                 updateScore();
                 
-                highlightDifference(diff, coord);
+                // Calculate the scaled position for the highlight
+                const rect = image1.getBoundingClientRect();
+                const scaleX = rect.width / image1.naturalWidth;
+                const scaleY = rect.height / image1.naturalHeight;
+                
+                const scaledX = coord.x * scaleX;
+                const scaledY = coord.y * scaleY;
+                const scaledWidth = diff.width * scaleX;
+                const scaledHeight = diff.height * scaleY;
+                
+                highlightDifference({
+                    x: scaledX,
+                    y: scaledY,
+                    width: scaledWidth,
+                    height: scaledHeight
+                });
+                
                 checkGameCompletion();
                 return;
             }
@@ -148,24 +173,24 @@ function checkDifference(x, y) {
 }
 
 // Highlight the found difference
-function highlightDifference(diff, coord) {
+function highlightDifference(scaledCoord) {
     // Remove any existing highlights first
     const existingHighlights = document.querySelectorAll('.highlight');
     existingHighlights.forEach(highlight => highlight.remove());
     
     const highlight = document.createElement('div');
     highlight.className = 'highlight';
-    highlight.style.left = coord.x + 'px';
-    highlight.style.top = coord.y + 'px';
-    highlight.style.width = diff.width + 'px';
-    highlight.style.height = diff.height + 'px';
+    highlight.style.left = scaledCoord.x + 'px';
+    highlight.style.top = scaledCoord.y + 'px';
+    highlight.style.width = scaledCoord.width + 'px';
+    highlight.style.height = scaledCoord.height + 'px';
     
     // Add the highlight to the image wrapper
     const imageWrapper = image1.parentElement;
     imageWrapper.appendChild(highlight);
     
     // Log for debugging
-    console.log('Highlight added at:', coord.x, coord.y, diff.width, diff.height);
+    console.log('Highlight added at:', scaledCoord.x, scaledCoord.y, scaledCoord.width, scaledCoord.height);
 }
 
 // Update the score display
