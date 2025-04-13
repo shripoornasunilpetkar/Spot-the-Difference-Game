@@ -192,33 +192,28 @@ h1 {
     margin-bottom: 0.5rem;
     flex: 1;
     overflow: hidden;
-    padding: 1rem;
-    height: calc(100vh - 200px);
 }
 
 .image-wrapper {
-    position: relative !important;
-    max-width: 45%;
-    width: 600px;
-    height: 600px;
+    position: relative;
+    max-width: 50%;
+    width: 100%;
     border-radius: 10px;
-    overflow: visible !important;
+    overflow: hidden;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--dark-bg);
 }
 
 img {
     max-width: 100%;
     max-height: 100%;
-    width: auto;
     height: auto;
-    object-fit: contain;
     border-radius: 10px;
     cursor: pointer;
     display: block;
+    object-fit: contain;
 }
 
 #coordinates {
@@ -272,18 +267,12 @@ img {
 
 .highlight {
     position: absolute;
-    background-color: rgba(0, 184, 148, 0.3) !important;
-    border: 3px solid #00b894 !important;
+    border: 3px solid var(--highlight-color);
     border-radius: 5px;
     pointer-events: none;
-    z-index: 1000;
-    box-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
-    transform-origin: top left;
-    min-width: 20px;
-    min-height: 20px;
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
+    box-shadow: 0 0 10px rgba(0, 184, 148, 0.7);
+    z-index: 10;
+    background-color: rgba(0, 184, 148, 0.2);
 }
 
 /* Game Controls */
@@ -431,20 +420,11 @@ img {
     .images-container {
         flex-direction: column;
         align-items: center;
-        height: auto;
-        padding: 0.5rem;
     }
     
     .image-wrapper {
         max-width: 100%;
-        width: 100%;
-        height: 45vh;
-        margin-bottom: 1rem;
-    }
-    
-    img {
-        max-height: 100%;
-        width: auto;
+        max-height: 40vh;
     }
     
     .stats {

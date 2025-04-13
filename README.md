@@ -123,3 +123,7 @@ CSS3: Handles styling and layout
 JavaScript: Powers all the logic and interactivity
 
 JSON: Stores and loads game data
+<<<<<<< HEAD
+
+=======
+>>>>>>> e3e49b9d5459bcfeae532554c8f5a2013d45ad0f

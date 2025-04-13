@@ -96,33 +96,9 @@ async function initGame() {
         await loadGameConfig();
     }
     
-    // Remove any existing highlights
-    const existingHighlights = document.querySelectorAll('.highlight');
-    existingHighlights.forEach(highlight => highlight.remove());
-    
-    // Set image sources and ensure they load properly
-    await Promise.all([
-        new Promise(resolve => {
-            image1.onload = () => {
-                console.log('Image 1 dimensions:', {
-                    natural: { width: image1.naturalWidth, height: image1.naturalHeight },
-                    display: { width: image1.offsetWidth, height: image1.offsetHeight }
-                });
-                resolve();
-            };
-            image1.src = gameConfig.images.image1;
-        }),
-        new Promise(resolve => {
-            image2.onload = () => {
-                console.log('Image 2 dimensions:', {
-                    natural: { width: image2.naturalWidth, height: image2.naturalHeight },
-                    display: { width: image2.offsetWidth, height: image2.offsetHeight }
-                });
-                resolve();
-            };
-            image2.src = gameConfig.images.image2;
-        })
-    ]);
+    // Set image sources
+    image1.src = gameConfig.images.image1;
+    image2.src = gameConfig.images.image2;
     
     // Reset game state
     score = 0;
@@ -143,30 +119,8 @@ function handleImageClick(e) {
     }, 62.5);
     
     const rect = image1.getBoundingClientRect();
-    const displayWidth = rect.width;
-    const displayHeight = rect.height;
-    
-    // Get click position relative to the image
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-    
-    // Calculate the ratio between natural and display dimensions
-    const scaleX = image1.naturalWidth / displayWidth;
-    const scaleY = image1.naturalHeight / displayHeight;
-    
-    // Convert click coordinates to the original image space
-    const x = Math.round(clickX * scaleX);
-    const y = Math.round(clickY * scaleY);
-    
-    // Log all dimensions and calculations for debugging
-    console.log('Click event:', {
-        client: { x: e.clientX, y: e.clientY },
-        rect: { left: rect.left, top: rect.top },
-        click: { x: clickX, y: clickY },
-        scale: { x: scaleX, y: scaleY },
-        calculated: { x, y }
-    });
-    
+    const x = Math.round(e.clientX - rect.left);
+    const y = Math.round(e.clientY - rect.top);
     checkDifference(x, y);
 }
 
@@ -181,33 +135,7 @@ function checkDifference(x, y) {
                 foundDifferences.push(diff);
                 score++;
                 updateScore();
-                
-                // Get current image dimensions
-                const rect = image1.getBoundingClientRect();
-                
-                // Calculate the ratio between natural and display dimensions
-                const scaleX = rect.width / image1.naturalWidth;
-                const scaleY = rect.height / image1.naturalHeight;
-                
-                // Scale the coordinates and dimensions for display
-                const scaledX = coord.x * scaleX;
-                const scaledY = coord.y * scaleY;
-                const scaledWidth = diff.width * scaleX;
-                const scaledHeight = diff.height * scaleY;
-                
-                // Log the scaling calculations
-                console.log('Highlight scaling:', {
-                    original: { x: coord.x, y: coord.y, width: diff.width, height: diff.height },
-                    scale: { x: scaleX, y: scaleY },
-                    scaled: { x: scaledX, y: scaledY, width: scaledWidth, height: scaledHeight }
-                });
-                
-                highlightDifference({
-                    x: scaledX,
-                    y: scaledY,
-                    width: scaledWidth,
-                    height: scaledHeight
-                });
+                highlightDifference(diff, coord);
                 
                 checkGameCompletion();
                 return;
@@ -217,37 +145,24 @@ function checkDifference(x, y) {
 }
 
 // Highlight the found difference
-function highlightDifference(scaledCoord) {
+function highlightDifference(diff, coord) {
     // Remove any existing highlights first
     const existingHighlights = document.querySelectorAll('.highlight');
     existingHighlights.forEach(highlight => highlight.remove());
     
     const highlight = document.createElement('div');
     highlight.className = 'highlight';
-    highlight.style.left = scaledCoord.x + 'px';
-    highlight.style.top = scaledCoord.y + 'px';
-    highlight.style.width = scaledCoord.width + 'px';
-    highlight.style.height = scaledCoord.height + 'px';
+    highlight.style.left = coord.x + 'px';
+    highlight.style.top = coord.y + 'px';
+    highlight.style.width = diff.width + 'px';
+    highlight.style.height = diff.height + 'px';
     
     // Add the highlight to the image wrapper
     const imageWrapper = image1.parentElement;
-    
-    // Force a reflow to ensure the highlight is rendered
-    highlight.offsetHeight;
-    
     imageWrapper.appendChild(highlight);
     
-    // Double check that the highlight was added and is visible
-    console.log('Highlight element:', highlight);
-    console.log('Highlight styles:', {
-        left: highlight.style.left,
-        top: highlight.style.top,
-        width: highlight.style.width,
-        height: highlight.style.height,
-        display: getComputedStyle(highlight).display,
-        visibility: getComputedStyle(highlight).visibility,
-        opacity: getComputedStyle(highlight).opacity
-    });
+    // Log for debugging
+    console.log('Highlight added at:', coord.x, coord.y, diff.width, diff.height);
 }
 
 // Update the score display
