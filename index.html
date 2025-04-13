@@ -5,84 +5,382 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spot the Difference Game</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="game-container">
-        <h1 id="gameTitle">Spot the Difference</h1>
-        
-        <div id="homePage" class="home-page">
-            <div class="game-description">
-                <div class="logo">
-                    <i class="fas fa-search-plus"></i>
-                </div>
-                <h2>Welcome to Spot the Difference!</h2>
-                <p>This game challenges you to find the differences between two nearly identical images. 
-                   Test your observation skills and see how quickly you can spot all the differences!</p>
-                
-                <h3>How to Play:</h3>
+    <div id="welcome-page" class="welcome-page">
+        <div class="welcome-content">
+            <h1>Welcome to Spot the Difference!</h1>
+            <div class="instructions">
+                <h2>How to Play:</h2>
                 <ol>
-                    <li><i class="fas fa-images"></i> Two images will be displayed side by side</li>
-                    <li><i class="fas fa-eye"></i> Look carefully at both images to find the differences</li>
-                    <li><i class="fas fa-mouse-pointer"></i> Click on the difference in the <strong>LEFT image only</strong></li>
-                    <li><i class="fas fa-check-circle"></i> When you find a difference, it will be highlighted with a red border</li>
-                    <li><i class="fas fa-clock"></i> The game tracks your time and score</li>
-                    <li><i class="fas fa-trophy"></i> Find all differences to complete the game!</li>
+                    <li>Look carefully at both images side by side</li>
+                    <li>Click on the differences you find in the <strong>left image</strong></li>
+                    <li>There are 6 differences to find in total</li>
+                    <li>Try to find all differences as quickly as possible!</li>
+                    <li>Your time will be recorded when you find all differences</li>
                 </ol>
-                
-                <div class="start-button-container">
-                    <button id="startGame" class="start-button">
-                        <i class="fas fa-play"></i> Start Game
-                    </button>
-                </div>
+                <p class="tip">💡 Tip: Look for small changes in colors, shapes, or missing elements!</p>
             </div>
-        </div>
-        
-        <div id="gamePage" class="game-page" style="display: none;">
-            <div class="images-container">
-                <div class="image-wrapper">
-                    <img id="image1" src="" alt="Image 1">
-                </div>
-                <div class="image-wrapper">
-                    <img id="image2" src="" alt="Image 2">
-                </div>
-            </div>
-            <div class="game-info">
-                <div id="score-container">
-                    <i class="fas fa-star"></i>
-                    <span id="score">Differences found: 0/1</span>
-                </div>
-                <div id="timer-container">
-                    <i class="fas fa-clock"></i>
-                    <span id="timer">Time: 0s</span>
-                </div>
-            </div>
-        </div>
-        
-        <div id="congratsPage" class="congrats-page" style="display: none;">
-            <div class="congrats-content">
-                <div class="trophy-icon">
-                    <i class="fas fa-trophy"></i>
-                </div>
-                <h2>Congratulations!</h2>
-                <p>You've successfully found all the differences!</p>
-                <div class="stats">
-                    <div class="stat-item">
-                        <i class="fas fa-clock"></i>
-                        <span>Time: <span id="finalTime">0</span> seconds</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-star"></i>
-                        <span>Differences: <span id="finalScore">0/0</span></span>
-                    </div>
-                </div>
-                <div class="congrats-buttons">
-                    <button id="playAgain" class="congrats-button"><i class="fas fa-redo"></i> Play Again</button>
-                    <button id="congratsToHome" class="congrats-button"><i class="fas fa-home"></i> Back to Home</button>
-                </div>
-            </div>
+            <button id="start-game" class="start-game-btn">Start Game</button>
         </div>
     </div>
-    <script src="game.js"></script>
+
+    <div class="game-container" style="display: none;">
+        <h1>Spot the Difference</h1>
+        <div class="game-info">
+            <div id="score-container">
+                <span id="score">Differences found: 0/6</span>
+            </div>
+            <div id="timer-container">
+                <span id="timer">Time: 0s</span>
+            </div>
+        </div>
+        <div class="images-container">
+            <div class="image-wrapper">
+                <img id="image1" src="images/image3.png" alt="Image 1">
+            </div>
+            <div class="image-wrapper">
+                <img id="image2" src="images/image4.png" alt="Image 2">
+            </div>
+        </div>
+        <div id="debug-info" class="debug-info"></div>
+        <div id="message" class="message"></div>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="clickSound" src="sounds/click.wav" preload="auto"></audio>
+    <audio id="successSound" src="sounds/Success.wav" preload="auto"></audio>
+
+    <div id="congrats-page" class="congrats-page" style="display: none;">
+        <div class="congrats-content">
+            <h2>Congratulations! 🎉</h2>
+            <p>You found all 6 differences!</p>
+            <p>Your time: <span id="final-time">0s</span></p>
+            <button id="play-again" class="play-again-btn">Play Again</button>
+        </div>
+    </div>
+
+    <div id="lost-page" class="lost-page" style="display: none;">
+        <div class="lost-content">
+            <h2>Time's Up! ⏰</h2>
+            <p>You didn't find all differences in time.</p>
+            <div class="all-differences">
+                <h3>All Differences:</h3>
+                <ul id="differences-list">
+                    <!-- Differences will be listed here -->
+                </ul>
+            </div>
+            <button id="try-again" class="try-again-btn">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game configuration
+        const gameConfig = {
+            levels: [
+                {
+                    images: {
+                        image1: "images/image3.png",
+                        image2: "images/image4.png"
+                    },
+                    differences: [
+                        { x: 307, y: 123, description: "Difference in the mouth of the player wearing jersey number 2" },
+                        { x: 186, y: 31, description: "Change in the color of the football" },
+                        { x: 57, y: 73, description: "Change in jersey number of player who originally wore number 9" },
+                        { x: 365, y: 73, description: "Change in jersey color of player with jersey number 7" },
+                        { x: 391, y: 105, description: "Change in socks of player with jersey number 7" },
+                        { x: 146, y: 258, description: "Change in shoes of player with jersey number 1" }
+                    ]
+                }
+            ]
+        };
+
+        // Game variables
+        let currentLevel = 0;
+        let score = 0;
+        let foundDifferences = [];
+        let startTime = Date.now();
+        let timerInterval;
+        let gameTimeout;
+
+        // DOM elements
+        const image1 = document.getElementById('image1');
+        const image2 = document.getElementById('image2');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const debugInfoElement = document.getElementById('debug-info');
+        const messageElement = document.getElementById('message');
+        const congratsPage = document.getElementById('congrats-page');
+        const lostPage = document.getElementById('lost-page');
+        const finalTimeElement = document.getElementById('final-time');
+        const playAgainBtn = document.getElementById('play-again');
+        const tryAgainBtn = document.getElementById('try-again');
+        const differencesList = document.getElementById('differences-list');
+        const welcomePage = document.getElementById('welcome-page');
+        const gameContainer = document.querySelector('.game-container');
+        const startGameBtn = document.getElementById('start-game');
+        const clickSound = document.getElementById('clickSound');
+        const successSound = document.getElementById('successSound');
+
+        // Hide debug info by default
+        debugInfoElement.style.display = 'none';
+
+        // Audio error handling
+        clickSound.addEventListener('error', (e) => {
+            console.error('Error loading click sound:', e);
+        });
+
+        successSound.addEventListener('error', (e) => {
+            console.error('Error loading success sound:', e);
+        });
+
+        // Start game button handler
+        startGameBtn.addEventListener('click', () => {
+            // Play click sound
+            try {
+                clickSound.currentTime = 0;
+                clickSound.play().catch(error => {
+                    console.error('Error playing click sound:', error);
+                });
+            } catch (error) {
+                console.error('Error with click sound:', error);
+            }
+            
+            welcomePage.style.display = 'none';
+            gameContainer.style.display = 'block';
+            loadLevel(0);
+        });
+
+        // Function to load level
+        function loadLevel(levelIndex) {
+            const level = gameConfig.levels[levelIndex];
+            
+            // Wait for images to load before setting up click handlers
+            const imageLoadPromises = [
+                new Promise((resolve) => {
+                    image1.onload = resolve;
+                    image1.src = level.images.image1;
+                }),
+                new Promise((resolve) => {
+                    image2.onload = resolve;
+                    image2.src = level.images.image2;
+                })
+            ];
+
+            Promise.all(imageLoadPromises).then(() => {
+                setupImageHandlers();
+                
+                // Reset game state
+                score = 0;
+                foundDifferences = [];
+                startTime = Date.now();
+                updateScore();
+                startTimer();
+                showMessage("Find all 6 differences between the two images!");
+
+                // Set game timeout
+                clearTimeout(gameTimeout);
+                gameTimeout = setTimeout(() => {
+                    if (score < 6) {
+                        showLostPage();
+                    }
+                }, 60000); // 60 seconds
+            });
+        }
+
+        // Setup image handlers after images are loaded
+        function setupImageHandlers() {
+            // Remove existing handlers
+            image1.removeEventListener('click', handleImageClick);
+            image1.removeEventListener('mousemove', handleMouseMove);
+
+            // Add new handlers
+            image1.addEventListener('click', handleImageClick);
+            image1.addEventListener('mousemove', handleMouseMove);
+        }
+
+        // Handle mouse movement
+        function handleMouseMove(event) {
+            const rect = image1.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            // Update coordinates display
+            coordinatesElement.textContent = `x: ${Math.round(x)}, y: ${Math.round(y)}`;
+        }
+
+        // Handle image click
+        function handleImageClick(event) {
+            // Play click sound
+            try {
+                clickSound.currentTime = 0;
+                clickSound.play().catch(error => {
+                    console.error('Error playing click sound:', error);
+                });
+            } catch (error) {
+                console.error('Error with click sound:', error);
+            }
+
+            const rect = image1.getBoundingClientRect();
+            const scaleX = image1.naturalWidth / rect.width;
+            const scaleY = image1.naturalHeight / rect.height;
+            
+            const x = Math.round((event.clientX - rect.left) * scaleX);
+            const y = Math.round((event.clientY - rect.top) * scaleY);
+            
+            // Debug information
+            const debugInfo = `
+                Click coordinates:
+                - Raw: ${event.clientX - rect.left}, ${event.clientY - rect.top}
+                - Scaled: ${x}, ${y}
+                Image dimensions:
+                - Natural: ${image1.naturalWidth}x${image1.naturalHeight}
+                - Displayed: ${rect.width}x${rect.height}
+                - Scale: ${scaleX.toFixed(2)}x${scaleY.toFixed(2)}
+            `;
+            debugInfoElement.textContent = debugInfo;
+            
+            checkDifference(x, y, event.clientX - rect.left, event.clientY - rect.top, scaleX, scaleY);
+        }
+
+        // Check if clicked position is a difference
+        function checkDifference(naturalX, naturalY, displayX, displayY, scaleX, scaleY) {
+            // Adjust tolerance based on scale factor
+            const TOLERANCE = 20; // Base tolerance in natural coordinates
+            const scaledTolerance = TOLERANCE; // Keep tolerance in natural coordinates
+
+            for (const diff of gameConfig.levels[currentLevel].differences) {
+                // Skip if this difference was already found
+                if (foundDifferences.some(found => found.x === diff.x && found.y === diff.y)) {
+                    continue;
+                }
+
+                // Check if click is within tolerance in both x and y
+                if (Math.abs(naturalX - diff.x) <= scaledTolerance && Math.abs(naturalY - diff.y) <= scaledTolerance) {
+                    // Mark this difference as found
+                    foundDifferences.push(diff);
+                    score++;
+                    updateScore();
+                    
+                    // Show red dot at clicked position (using display coordinates)
+                    const highlight = document.createElement('div');
+                    highlight.className = 'highlight';
+                    highlight.style.left = `${displayX - 10}px`; // Center the dot
+                    highlight.style.top = `${displayY - 10}px`;
+                    highlight.style.width = '20px';
+                    highlight.style.height = '20px';
+                    image1.parentElement.appendChild(highlight);
+                    
+                    showMessage(`Great! You found difference ${score} of 6!`);
+
+                    // Check if all differences are found
+                    if (score === gameConfig.levels[currentLevel].differences.length) {
+                        clearInterval(timerInterval);
+                        showCongratsPage();
+                    }
+                    return;
+                }
+            }
+            showMessage("No difference found here. Try again!");
+        }
+
+        // Show congrats page
+        function showCongratsPage() {
+            // Play success sound
+            try {
+                successSound.currentTime = 0;
+                successSound.play().catch(error => {
+                    console.error('Error playing success sound:', error);
+                });
+            } catch (error) {
+                console.error('Error with success sound:', error);
+            }
+
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            finalTimeElement.textContent = `${elapsedTime}s`;
+            document.querySelector('.game-container').style.display = 'none';
+            congratsPage.style.display = 'flex';
+        }
+
+        // Show message to user
+        function showMessage(text) {
+            messageElement.textContent = text;
+            messageElement.style.display = 'block';
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 3000);
+        }
+
+        // Start timer
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                timerElement.textContent = `Time: ${elapsedTime}s`;
+            }, 1000);
+        }
+
+        // Update score display
+        function updateScore() {
+            scoreElement.textContent = `Differences found: ${score}/6`;
+        }
+
+        // Play again button handler
+        playAgainBtn.addEventListener('click', () => {
+            // Play click sound
+            try {
+                clickSound.currentTime = 0;
+                clickSound.play().catch(error => {
+                    console.error('Error playing click sound:', error);
+                });
+            } catch (error) {
+                console.error('Error with click sound:', error);
+            }
+            
+            congratsPage.style.display = 'none';
+            document.querySelector('.game-container').style.display = 'block';
+            loadLevel(0);
+        });
+
+        // Show lost page
+        function showLostPage() {
+            clearInterval(timerInterval);
+            clearTimeout(gameTimeout);
+            document.querySelector('.game-container').style.display = 'none';
+            
+            // Populate differences list
+            differencesList.innerHTML = '';
+            gameConfig.levels[currentLevel].differences.forEach((diff, index) => {
+                const li = document.createElement('li');
+                li.textContent = diff.description;
+                if (foundDifferences.some(found => found.x === diff.x && found.y === diff.y)) {
+                    li.classList.add('found');
+                }
+                differencesList.appendChild(li);
+            });
+            
+            lostPage.style.display = 'flex';
+        }
+
+        // Try again button handler
+        tryAgainBtn.addEventListener('click', () => {
+            // Play click sound
+            try {
+                clickSound.currentTime = 0;
+                clickSound.play().catch(error => {
+                    console.error('Error playing click sound:', error);
+                });
+            } catch (error) {
+                console.error('Error with click sound:', error);
+            }
+            
+            lostPage.style.display = 'none';
+            gameContainer.style.display = 'block';
+            loadLevel(0);
+        });
+
+        // Start the game
+        loadLevel(0);
+    </script>
 </body>
 </html> 

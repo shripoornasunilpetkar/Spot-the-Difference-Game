@@ -1,20 +1,61 @@
 {
   "gameTitle": "Spot the Difference",
-  "images": {
-    "image1": "images/image1.jpeg",
-    "image2": "images/image2.jpeg"
-  },
-  "differences": [
-    { 
-      "validCoordinates": [
-        { "x": 296, "y": 368 },
-        { "x": 408, "y": 353 },
-        { "x": 364, "y": 423 },
-        { "x": 202, "y": 361 }
-      ],
-      "width": 60,
-      "height": 60
+  "levels": [
+    {
+      "images": {
+        "image1": "images/image3.png",
+        "image2": "images/image4.png"
+      },
+      "differences": [
+        { 
+          "validCoordinates": [
+            { "x": 425, "y": 176 }
+          ],
+          "width": 20,
+          "height": 20,
+          "tolerance": 20
+        },
+        { 
+          "validCoordinates": [
+            { "x": 501, "y": 100 }
+          ],
+          "width": 20,
+          "height": 20,
+          "tolerance": 20
+        },
+        { 
+          "validCoordinates": [
+            { "x": 254, "y": 46 }
+          ],
+          "width": 20,
+          "height": 20,
+          "tolerance": 20
+        },
+        { 
+          "validCoordinates": [
+            { "x": 549, "y": 144 }
+          ],
+          "width": 20,
+          "height": 20,
+          "tolerance": 20
+        },
+        { 
+          "validCoordinates": [
+            { "x": 209, "y": 355 }
+          ],
+          "width": 20,
+          "height": 20,
+          "tolerance": 20
+        },
+        { 
+          "validCoordinates": [
+            { "x": 85, "y": 100 }
+          ],
+          "width": 20,
+          "height": 20,
+          "tolerance": 20
+        }
+      ]
     }
-  ],
-  "tolerance": 30
+  ]
 } 

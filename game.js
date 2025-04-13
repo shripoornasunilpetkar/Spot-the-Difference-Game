@@ -1,20 +1,7 @@
 // Game configuration
 let gameConfig = {
-    image1: 'images/image1.jpeg',
-    image2: 'images/image2.jpeg',
-    differences: [
-        { 
-            validCoordinates: [
-                { x: 296, y: 368 },
-                { x: 408, y: 353 },
-                { x: 364, y: 423 },
-                { x: 202, y: 361 }
-            ],
-            width: 60,
-            height: 60
-        }
-    ],
-    tolerance: 30 // Tolerance range in pixels
+    gameTitle: "Spot the Difference",
+    levels: []
 };
 
 // DOM Elements
@@ -34,6 +21,9 @@ let score = 0;
 let foundDifferences = [];
 let gameTimer;
 let seconds = 0;
+let currentLevel = 1;
+let currentDifferences = [];
+let currentTolerance = 30;
 
 // Sound effects
 const sounds = {
@@ -46,30 +36,15 @@ const sounds = {
 function playSound(soundName) {
     try {
         if (sounds[soundName]) {
-            // Check if the sound file is valid before trying to play it
             if (sounds[soundName].duration > 0 || sounds[soundName].readyState >= 2) {
                 sounds[soundName].currentTime = 0;
                 sounds[soundName].play().catch(err => {
                     console.log(`Error playing ${soundName} sound:`, err);
                 });
-            } else {
-                console.log(`Sound ${soundName} is not loaded or is empty`);
             }
         }
     } catch (error) {
         console.log(`Sound ${soundName} not available:`, error);
-    }
-}
-
-// Function to add click sound to an element
-function addClickSoundToElement(element) {
-    if (element) {
-        element.addEventListener('click', () => {
-            // Add a 0.0625 second delay before playing the click sound
-            setTimeout(() => {
-                playSound('click');
-            }, 62.5);
-        });
     }
 }
 
@@ -85,68 +60,107 @@ async function loadGameConfig() {
         console.log('Game configuration loaded successfully');
     } catch (error) {
         console.error('Error loading game configuration:', error);
-        // Fallback to default configuration
     }
 }
 
-// Initialize the game
-async function initGame() {
-    // Load configuration if not already loaded
-    if (!gameConfig.gameTitle) {
-        await loadGameConfig();
+// Function to load level configuration
+function loadLevel(level) {
+    const levelConfig = gameConfig.levels[level - 1];
+    if (!levelConfig) {
+        console.error('Invalid level configuration');
+        return;
     }
+
+    const image1 = document.getElementById('image1');
+    const image2 = document.getElementById('image2');
     
-    // Set image sources
-    image1.src = gameConfig.images.image1;
-    image2.src = gameConfig.images.image2;
+    // Wait for images to load before setting up handlers
+    Promise.all([
+        new Promise(resolve => {
+            image1.onload = resolve;
+            image1.src = levelConfig.images.image1;
+        }),
+        new Promise(resolve => {
+            image2.onload = resolve;
+            image2.src = levelConfig.images.image2;
+        })
+    ]).then(() => {
+        currentDifferences = levelConfig.differences;
+        currentTolerance = levelConfig.tolerance || 30;
+        
+        // Reset game state
+        score = 0;
+        foundDifferences = [];
+        updateScore();
+        startTimer();
+        
+        // Setup image handlers after images are loaded
+        setupImageHandlers();
+    });
+}
+
+function setupImageHandlers() {
+    // Remove existing handlers
+    image1.removeEventListener('click', handleImageClick);
+    image1.removeEventListener('mousemove', handleMouseMove);
     
-    // Reset game state
-    score = 0;
-    foundDifferences = [];
-    seconds = 0;
-    updateScore();
-    updateTimer();
-    
-    // Add click event listener to image1
+    // Add new handlers
     image1.addEventListener('click', handleImageClick);
+    image1.addEventListener('mousemove', handleMouseMove);
 }
 
-// Handle image click
-function handleImageClick(e) {
-    // Add a 0.0625 second delay before playing the click sound
-    setTimeout(() => {
-        playSound('click');
-    }, 62.5);
-    
+function handleMouseMove(event) {
     const rect = image1.getBoundingClientRect();
-    const x = Math.round(e.clientX - rect.left);
-    const y = Math.round(e.clientY - rect.top);
+    const scaleX = image1.naturalWidth / rect.width;
+    const scaleY = image1.naturalHeight / rect.height;
+    
+    const x = Math.round((event.clientX - rect.left) * scaleX);
+    const y = Math.round((event.clientY - rect.top) * scaleY);
+    
+    document.getElementById('coordinates').textContent = `X: ${x}, Y: ${y}`;
+}
+
+function handleImageClick(event) {
+    const rect = image1.getBoundingClientRect();
+    const scaleX = image1.naturalWidth / rect.width;
+    const scaleY = image1.naturalHeight / rect.height;
+    
+    const x = Math.round((event.clientX - rect.left) * scaleX);
+    const y = Math.round((event.clientY - rect.top) * scaleY);
+    
+    console.log(`Clicked at coordinates: x=${x}, y=${y}`);
     checkDifference(x, y);
 }
 
 // Check if the clicked position is a difference
 function checkDifference(x, y) {
-    for (const diff of gameConfig.differences) {
-        // Check if the click is within the tolerance range of any valid coordinate
+    for (const diff of currentDifferences) {
         for (const coord of diff.validCoordinates) {
-            if (!foundDifferences.includes(diff) &&
-                x >= coord.x - gameConfig.tolerance && x <= coord.x + diff.width + gameConfig.tolerance &&
-                y >= coord.y - gameConfig.tolerance && y <= coord.y + diff.height + gameConfig.tolerance) {
+            const distance = Math.sqrt(
+                Math.pow(x - coord.x, 2) + 
+                Math.pow(y - coord.y, 2)
+            );
+            
+            if (distance <= currentTolerance && !foundDifferences.includes(diff)) {
                 foundDifferences.push(diff);
                 score++;
                 updateScore();
                 highlightDifference(diff, coord);
+                playSound('success');
                 
-                checkGameCompletion();
+                // Move to next level after finding one difference
+                setTimeout(() => {
+                    checkGameCompletion();
+                }, 1000);
                 return;
             }
         }
     }
+    console.log('No difference found at:', x, y);
 }
 
 // Highlight the found difference
 function highlightDifference(diff, coord) {
-    // Remove any existing highlights first
     const existingHighlights = document.querySelectorAll('.highlight');
     existingHighlights.forEach(highlight => highlight.remove());
     
@@ -157,17 +171,15 @@ function highlightDifference(diff, coord) {
     highlight.style.width = diff.width + 'px';
     highlight.style.height = diff.height + 'px';
     
-    // Add the highlight to the image wrapper
     const imageWrapper = image1.parentElement;
     imageWrapper.appendChild(highlight);
     
-    // Log for debugging
     console.log('Highlight added at:', coord.x, coord.y, diff.width, diff.height);
 }
 
 // Update the score display
 function updateScore() {
-    scoreElement.textContent = `Differences found: ${score}/${gameConfig.differences.length}`;
+    scoreElement.textContent = `Differences found: ${score}/${currentDifferences.length}`;
 }
 
 // Update the timer display
@@ -177,6 +189,8 @@ function updateTimer() {
 
 // Start the game timer
 function startTimer() {
+    seconds = 0;
+    updateTimer();
     gameTimer = setInterval(() => {
         seconds++;
         updateTimer();
@@ -188,19 +202,16 @@ function stopTimer() {
     clearInterval(gameTimer);
 }
 
-// Check if all differences have been found
+// Check game completion
 function checkGameCompletion() {
-    if (foundDifferences.length === gameConfig.differences.length) {
-        stopTimer();
-        
-        // Add a 3-second delay before playing the success sound and showing the congratulations page
+    stopTimer();
+    if (currentLevel < gameConfig.levels.length) {
         setTimeout(() => {
-            // Play success sound after the delay
-            playSound('success');
-            
-            // Show the congratulations page immediately after playing the success sound
-            showCongratsPage();
-        }, 3000);
+            currentLevel++;
+            loadLevel(currentLevel);
+        }, 1000);
+    } else {
+        showCongratsPage();
     }
 }
 
@@ -209,8 +220,7 @@ function showGamePage() {
     homePage.style.display = 'none';
     gamePage.style.display = 'flex';
     congratsPage.style.display = 'none';
-    initGame();
-    startTimer();
+    loadLevel(currentLevel);
 }
 
 // Show the home page
@@ -227,37 +237,14 @@ function showCongratsPage() {
     gamePage.style.display = 'none';
     congratsPage.style.display = 'flex';
     finalTimeElement.textContent = seconds;
-    finalScoreElement.textContent = `${score}/${gameConfig.differences.length}`;
+    finalScoreElement.textContent = `${score}/${currentDifferences.length}`;
 }
 
 // Start the game
 function startGame() {
-    // Add a 0.0625 second delay before playing the click sound
-    setTimeout(() => {
-        playSound('click');
-    }, 62.5);
+    playSound('click');
     showGamePage();
 }
 
-// Event Listeners
-document.getElementById('startGame').addEventListener('click', startGame);
-document.getElementById('playAgain').addEventListener('click', startGame);
-document.getElementById('congratsToHome').addEventListener('click', showHomePage);
-
-// Add click sounds to all buttons
-document.addEventListener('DOMContentLoaded', () => {
-    // Add click sounds to all buttons
-    const buttons = document.querySelectorAll('button');
-    buttons.forEach(button => {
-        addClickSoundToElement(button);
-    });
-    
-    // Add click sounds to other interactive elements
-    const interactiveElements = document.querySelectorAll('a, .image-wrapper, .game-info, .stats, .congrats-buttons');
-    interactiveElements.forEach(element => {
-        addClickSoundToElement(element);
-    });
-    
-    loadGameConfig();
-    showHomePage();
-}); 
+// Initialize the game
+loadGameConfig(); 
