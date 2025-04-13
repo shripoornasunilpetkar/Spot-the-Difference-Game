@@ -96,9 +96,27 @@ async function initGame() {
         await loadGameConfig();
     }
     
-    // Set image sources
-    image1.src = gameConfig.images.image1;
-    image2.src = gameConfig.images.image2;
+    // Remove any existing highlights
+    const existingHighlights = document.querySelectorAll('.highlight');
+    existingHighlights.forEach(highlight => highlight.remove());
+    
+    // Set image sources and ensure they load properly
+    await Promise.all([
+        new Promise(resolve => {
+            image1.onload = () => {
+                console.log('Image 1 loaded:', image1.naturalWidth, image1.naturalHeight);
+                resolve();
+            };
+            image1.src = gameConfig.images.image1;
+        }),
+        new Promise(resolve => {
+            image2.onload = () => {
+                console.log('Image 2 loaded:', image2.naturalWidth, image2.naturalHeight);
+                resolve();
+            };
+            image2.src = gameConfig.images.image2;
+        })
+    ]);
     
     // Reset game state
     score = 0;
@@ -122,17 +140,20 @@ function handleImageClick(e) {
     const displayWidth = rect.width;
     const displayHeight = rect.height;
     
-    // Calculate the scaling factors
-    const scaleX = displayWidth / image1.naturalWidth;
-    const scaleY = displayHeight / image1.naturalHeight;
+    // Calculate the scaling factors based on the actual image dimensions
+    const scaleX = image1.naturalWidth / displayWidth;
+    const scaleY = image1.naturalHeight / displayHeight;
     
-    // Get click coordinates relative to the displayed image
-    const x = Math.round((e.clientX - rect.left) / scaleX);
-    const y = Math.round((e.clientY - rect.top) / scaleY);
+    // Get click coordinates in the original image space
+    const x = Math.round((e.clientX - rect.left) * scaleX);
+    const y = Math.round((e.clientY - rect.top) * scaleY);
     
-    // Log coordinates for debugging
-    console.log('Clicked at:', x, y);
-    console.log('Scale factors:', scaleX, scaleY);
+    // Log coordinates and scaling for debugging
+    console.log('Click position:', { clientX: e.clientX - rect.left, clientY: e.clientY - rect.top });
+    console.log('Image dimensions:', { natural: { width: image1.naturalWidth, height: image1.naturalHeight }, display: { width: displayWidth, height: displayHeight }});
+    console.log('Scaled coordinates:', { x, y });
+    console.log('Scale factors:', { scaleX, scaleY });
+    
     checkDifference(x, y);
 }
 
@@ -148,7 +169,7 @@ function checkDifference(x, y) {
                 score++;
                 updateScore();
                 
-                // Calculate the scaled position for the highlight
+                // Calculate the scaled position for the highlight based on current display size
                 const rect = image1.getBoundingClientRect();
                 const scaleX = rect.width / image1.naturalWidth;
                 const scaleY = rect.height / image1.naturalHeight;
